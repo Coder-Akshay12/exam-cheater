@@ -26,6 +26,7 @@
       box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
       max-width: 600px;
       width: 100%;
+      position: relative;
     }
 
     #exam-container h1 {
@@ -84,6 +85,18 @@
       display: none;
       z-index: 1000;
     }
+
+    /* Fullscreen overlay styles */
+    #fullscreen-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
   </style>
 </head>
 <body>
@@ -102,6 +115,9 @@
   <!-- Notification Popup -->
   <div id="notification">Copying is not allowed!</div>
 
+  <!-- Fullscreen overlay (hides fullscreen exit button) -->
+  <div id="fullscreen-overlay"></div>
+
   <script>
     // Select elements
     const startButton = document.getElementById("start-button");
@@ -109,7 +125,7 @@
     const cheatWarning = document.getElementById("cheat-warning");
     const notification = document.getElementById("notification");
     const randomTextBox = document.getElementById("random-text-box");
-    const examContainer = document.getElementById("exam-container");
+    const fullscreenOverlay = document.getElementById("fullscreen-overlay");
 
     let timeRemaining = 2 * 60 * 60; // 2 hours in seconds
     let timerInterval;
@@ -152,6 +168,9 @@
         document.documentElement.msRequestFullscreen();
       }
 
+      // Show fullscreen overlay to hide the fullscreen exit button
+      fullscreenOverlay.style.display = "block";
+
       // Start the timer
       startTimer();
     });
@@ -160,45 +179,20 @@
     document.addEventListener("fullscreenchange", () => {
       if (!document.fullscreenElement) {
         handleCheat();
+        fullscreenOverlay.style.display = "none"; // Remove fullscreen overlay
       }
     });
 
-    // Detect if user switches tabs
+    // Detect tab switching
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
-        handleCheat();
+        handleCheat(); // If the page becomes hidden, cheat is detected
       }
     });
 
-    // Detect page reload (or closing)
-    window.addEventListener("beforeunload", (event) => {
-      if (timeRemaining < 2 * 60 * 60) { // If the exam is already in progress
-        event.returnValue = "You are cheating the exam by reloading the page!";
-      }
-    });
-
-    // Detect loss of internet connection
-    window.addEventListener("offline", () => {
-      handleCheat(); // Trigger cheating detection
-    });
-
-    // Detect regaining internet connection
-    window.addEventListener("online", () => {
-      // Optional: You can display a message if the connection is restored
-      // console.log("Connection restored!");
-    });
-
-    // Detect if user presses Ctrl+N or Windows Key (for new window or task switching)
-    window.addEventListener("keydown", (event) => {
-      // Detect Ctrl + N (new window)
-      if (event.ctrlKey && event.key === "n") {
-        handleCheat();
-      }
-
-      // Detect Windows Key (on Windows or Linux systems)
-      if (event.key === "Meta") { // Meta key (Windows key on Windows)
-        handleCheat();
-      }
+    // Detect window focus loss (for app switching or task switching)
+    window.addEventListener("blur", () => {
+      handleCheat(); // If the window loses focus, cheat is detected
     });
 
     // Disable right-click (context menu)
@@ -220,6 +214,16 @@
       setTimeout(() => {
         notification.style.display = "none"; // Hide notification after 3 seconds
       }, 3000);
+    });
+
+    // Detect task-switching behavior (when visibility changes from 'visible' to 'hidden')
+    let previousVisibilityState = document.visibilityState;
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden" && previousVisibilityState === "visible") {
+        handleCheat();
+      }
+      previousVisibilityState = document.visibilityState;
     });
 
   </script>
