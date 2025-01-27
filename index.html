@@ -15,6 +15,7 @@
       background-color: #1a1a1a;
       color: white;
       font-family: Arial, sans-serif;
+      user-select: none; /* Disable text selection */
     }
 
     #exam-container {
@@ -58,6 +59,31 @@
       color: red;
       display: none;
     }
+
+    #random-text-box {
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #333;
+      border-radius: 8px;
+      max-width: 100%;
+      overflow-wrap: break-word;
+      font-size: 16px;
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    /* Style for the notification popup */
+    #notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: red;
+      color: white;
+      border-radius: 5px;
+      font-size: 16px;
+      display: none;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
@@ -66,13 +92,23 @@
     <button id="start-button">Start Contest</button>
     <div id="timer" style="display: none;">02:00:00</div>
     <div id="cheat-warning">You cheated the exam!</div>
+
+    <!-- Random text box for testing copy functionality -->
+    <div id="random-text-box">
+      Here is some random text for you to test if copying is disabled. Try to select and copy this text!
+    </div>
   </div>
+
+  <!-- Notification Popup -->
+  <div id="notification">Copying is not allowed!</div>
 
   <script>
     // Select elements
     const startButton = document.getElementById("start-button");
     const timerElement = document.getElementById("timer");
     const cheatWarning = document.getElementById("cheat-warning");
+    const notification = document.getElementById("notification");
+    const randomTextBox = document.getElementById("random-text-box");
     const examContainer = document.getElementById("exam-container");
 
     let timeRemaining = 2 * 60 * 60; // 2 hours in seconds
@@ -164,6 +200,28 @@
         handleCheat();
       }
     });
+
+    // Disable right-click (context menu)
+    window.addEventListener("contextmenu", (event) => {
+      event.preventDefault(); // Prevent right-click menu
+    });
+
+    // Disable text selection and copying
+    randomTextBox.addEventListener("mousedown", (event) => {
+      event.preventDefault(); // Disable text selection on mouse down
+    });
+
+    // Show notification when copy attempt is detected
+    randomTextBox.addEventListener("copy", (event) => {
+      event.preventDefault(); // Prevent the copy action
+
+      // Show notification
+      notification.style.display = "block";
+      setTimeout(() => {
+        notification.style.display = "none"; // Hide notification after 3 seconds
+      }, 3000);
+    });
+
   </script>
 </body>
 </html>
