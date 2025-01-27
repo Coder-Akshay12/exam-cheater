@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Monitor</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #1a1a1a;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    #exam-container {
+      text-align: center;
+      padding: 20px;
+      background-color: black;
+      border-radius: 10px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    #exam-container h1 {
+      margin: 10px 0;
+    }
+
+    #start-button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: green;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #start-button:hover {
+      background-color: darkgreen;
+    }
+
+    #timer {
+      font-size: 60px;
+      font-weight: bold;
+      color: green;
+      margin: 20px 0;
+    }
+
+    #cheat-warning {
+      font-size: 24px;
+      font-weight: bold;
+      color: red;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="exam-container">
+    <h1>Welcome to the Contest</h1>
+    <button id="start-button">Start Contest</button>
+    <div id="timer" style="display: none;">02:00:00</div>
+    <div id="cheat-warning">You cheated the exam!</div>
+  </div>
+
+  <script>
+    // Select elements
+    const startButton = document.getElementById("start-button");
+    const timerElement = document.getElementById("timer");
+    const cheatWarning = document.getElementById("cheat-warning");
+    const examContainer = document.getElementById("exam-container");
+
+    let timeRemaining = 2 * 60 * 60; // 2 hours in seconds
+    let timerInterval;
+
+    // Function to start the timer
+    function startTimer() {
+      timerElement.style.display = "block"; // Show the timer
+      startButton.style.display = "none"; // Hide the start button
+
+      // Countdown logic
+      timerInterval = setInterval(() => {
+        if (timeRemaining > 0) {
+          timeRemaining--;
+          const hours = String(Math.floor(timeRemaining / 3600)).padStart(2, "0");
+          const minutes = String(Math.floor((timeRemaining % 3600) / 60)).padStart(2, "0");
+          const seconds = String(timeRemaining % 60).padStart(2, "0");
+          timerElement.textContent = `${hours}:${minutes}:${seconds}`;
+        } else {
+          clearInterval(timerInterval);
+          timerElement.textContent = "Time's up!";
+        }
+      }, 1000);
+    }
+
+    // Function to detect cheating
+    function handleCheat() {
+      clearInterval(timerInterval); // Stop the timer
+      cheatWarning.style.display = "block"; // Show the cheated message
+      timerElement.textContent = "Exam Stopped";
+      timerElement.style.color = "red"; // Change timer color to red
+    }
+
+    // Start contest and enter fullscreen mode
+    startButton.addEventListener("click", () => {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) { // Safari
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) { // IE
+        document.documentElement.msRequestFullscreen();
+      }
+
+      // Start the timer
+      startTimer();
+    });
+
+    // Detect exit from fullscreen mode
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement) {
+        handleCheat();
+      }
+    });
+
+    // Detect if user switches tabs
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        handleCheat();
+      }
+    });
+
+    // Detect page reload (or closing)
+    window.addEventListener("beforeunload", (event) => {
+      if (timeRemaining < 2 * 60 * 60) { // If the exam is already in progress
+        event.returnValue = "You are cheating the exam by reloading the page!";
+      }
+    });
+
+    // Detect loss of internet connection
+    window.addEventListener("offline", () => {
+      handleCheat(); // Trigger cheating detection
+    });
+
+    // Detect regaining internet connection
+    window.addEventListener("online", () => {
+      // Optional: You can display a message if the connection is restored
+      // console.log("Connection restored!");
+    });
+
+    // Detect if user presses Ctrl+N or Windows Key (for new window or task switching)
+    window.addEventListener("keydown", (event) => {
+      // Detect Ctrl + N (new window)
+      if (event.ctrlKey && event.key === "n") {
+        handleCheat();
+      }
+
+      // Detect Windows Key (on Windows or Linux systems)
+      if (event.key === "Meta") { // Meta key (Windows key on Windows)
+        handleCheat();
+      }
+    });
+  </script>
+</body>
+</html>
